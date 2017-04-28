@@ -90,11 +90,6 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
     }
 
     @Override
-    public void showMoreHomeworks(List<Homework> homeworks) {
-        mHomeworksAdapter.addMoreData(homeworks);
-    }
-
-    @Override
     public void showNoHomeworks() {
         showNoHomeworksView();
     }
@@ -181,11 +176,6 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
 
         public Homework getItem(int position){
            return mHomeworks.get(position);
-        }
-
-        private void addMoreData(List<Homework> homeworks){
-            mHomeworks.addAll(homeworks);
-            notifyDataSetChanged();
         }
 
         public void replaceData(List<Homework> homeworks){

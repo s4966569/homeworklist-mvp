@@ -74,7 +74,7 @@ public class HomeworkPresenter implements HomeworkContract.Presenter {
                     mHomeworksView.showNoHomeworks();
                 }
                 mIsLoadingMore = false;
-                mHomeworksView.showMoreHomeworks(homeworks);
+                mHomeworksView.showHomeworks(homeworks);
             }
 
             @Override

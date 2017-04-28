@@ -69,7 +69,7 @@ public class HomeworkRepository implements HomeworkDataSource {
             @Override
             public void onHomeworkLoaded(List<Homework> homeworks) {
                 refreshCache(homeworks,true);
-                callback.onHomeworkLoaded(homeworks);
+                callback.onHomeworkLoaded(mCachedHomeworks);
             }
 
             @Override
