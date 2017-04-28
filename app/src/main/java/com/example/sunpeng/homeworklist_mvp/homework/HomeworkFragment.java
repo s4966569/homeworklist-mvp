@@ -179,8 +179,7 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
         }
 
         public void replaceData(List<Homework> homeworks){
-            mHomeworks.clear();
-            mHomeworks.addAll(homeworks);
+            mHomeworks = homeworks;
             notifyDataSetChanged();
         }
 
