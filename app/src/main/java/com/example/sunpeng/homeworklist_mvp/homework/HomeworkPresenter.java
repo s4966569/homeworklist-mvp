@@ -89,7 +89,7 @@ public class HomeworkPresenter implements HomeworkContract.Presenter {
     }
 
     @Override
-    public void clickHomeworItem(Homework homework) {
+    public void clickHomeworkItem(Homework homework) {
         mHomeworksView.showHomeworkDetail(homework);
     }
 }

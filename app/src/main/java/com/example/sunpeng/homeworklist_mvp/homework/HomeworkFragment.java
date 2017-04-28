@@ -143,7 +143,7 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
     HomeworkItemClickListener mItemClickListener = new HomeworkItemClickListener() {
         @Override
         public void onHomeworkClick(Homework homework) {
-            mPresenter.clickHomeworItem(homework);
+            mPresenter.clickHomeworkItem(homework);
         }
     };
 

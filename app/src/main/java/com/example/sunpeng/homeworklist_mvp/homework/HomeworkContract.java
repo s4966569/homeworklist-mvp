@@ -25,6 +25,6 @@ public interface HomeworkContract {
     interface Presenter extends BasePresenter{
         void loadHomeworks();
         void loadMoreHomeworks();
-        void clickHomeworItem(Homework homework);
+        void clickHomeworkItem(Homework homework);
     }
 }
