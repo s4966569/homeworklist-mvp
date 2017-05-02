@@ -15,8 +15,6 @@ public class HomeworkPresenter implements HomeworkContract.Presenter {
 
     private final HomeworkContract.View mHomeworksView;
 
-    private boolean mIsLoadingMore = false;
-
     public HomeworkPresenter(HomeworkRepository homeworkRepository, HomeworkContract.View homeworkView) {
         this.mHomeworkResponsitory = homeworkRepository;
         this.mHomeworksView = homeworkView;
@@ -59,11 +57,7 @@ public class HomeworkPresenter implements HomeworkContract.Presenter {
 
     @Override
     public void loadMoreHomeworks() {
-        if(mIsLoadingMore){
-            return;
-        }else {
-            mIsLoadingMore = true;
-        }
+        mHomeworksView.setLoadingMoreIndicator(true);
         mHomeworkResponsitory.getMoreHomework(new HomeworkDataSource.LoadHomeworkCallback() {
             @Override
             public void onHomeworkLoaded(List<Homework> homeworks) {
@@ -72,8 +66,9 @@ public class HomeworkPresenter implements HomeworkContract.Presenter {
                 }
                 if(homeworks == null || homeworks.size() ==0){
                     mHomeworksView.showNoHomeworks();
+                    return;
                 }
-                mIsLoadingMore = false;
+                mHomeworksView.setLoadingMoreIndicator(false);
                 mHomeworksView.showHomeworks(homeworks);
             }
 
@@ -82,7 +77,7 @@ public class HomeworkPresenter implements HomeworkContract.Presenter {
                 if(!mHomeworksView.isActive()){
                     return;
                 }
-                mIsLoadingMore = false;
+                mHomeworksView.setLoadingMoreIndicator(false);
                 mHomeworksView.showLoadingMoreHomeworksError(errorMessage);
             }
         });

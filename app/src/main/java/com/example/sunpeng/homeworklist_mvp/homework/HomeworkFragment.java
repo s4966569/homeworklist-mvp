@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,8 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
 
     private HomeworksAdapter mHomeworksAdapter;
 
+    private boolean mIsLoadingMore = false;
+
     public static HomeworkFragment newInstance() {
         return new HomeworkFragment();
     }
@@ -54,12 +57,12 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mRecyclerView.setAdapter(mHomeworksAdapter);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
             @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
-                if(newState == RecyclerView.SCROLL_STATE_IDLE && layoutManager.findLastVisibleItemPosition() == layoutManager.getItemCount()-1){
-                    mPresenter.loadMoreHomeworks();
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if(dy > 0){
+                    loadMore();
                 }
             }
         });
@@ -71,6 +74,16 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
         });
         mPresenter.start();
         return root;
+    }
+
+    private void loadMore() {
+        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        int totalItemCount = layoutManager.getItemCount();
+        int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
+        if(!mIsLoadingMore && lastVisibleItemPosition + 1 == totalItemCount){
+            mIsLoadingMore = true;
+            mPresenter.loadMoreHomeworks();
+        }
     }
 
     @Override
@@ -87,6 +100,16 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
     public void showHomeworks(List<Homework> homeworks) {
         showHomeworskView();
         mHomeworksAdapter.replaceData(homeworks);
+    }
+
+    @Override
+    public void setLoadingMoreIndicator(boolean active) {
+        if(active){
+            mHomeworksAdapter.addFooterView();
+        }else {
+            mIsLoadingMore = false;
+            mHomeworksAdapter.removeFooterView();
+        }
     }
 
     @Override
@@ -142,11 +165,17 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
         }
     };
 
-    private static class HomeworksAdapter extends RecyclerView.Adapter<HomeworksAdapter.HomeworkViewHolder>{
+    private static class HomeworksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
+
+        private static int TYPE_NORMAL = 0;
+
+        private static int TYPE_FOOTER =1;
 
         private List<Homework> mHomeworks;
 
         private HomeworkItemClickListener mItemListener;
+
+        private int insertPos;
 
         public HomeworksAdapter(List<Homework> homeworks, HomeworkItemClickListener homeworkItemClickListener) {
             mHomeworks = homeworks;
@@ -154,24 +183,41 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
         }
 
         @Override
-        public HomeworkViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-            return new HomeworkViewHolder(inflater.inflate(R.layout.homework_item,parent,false));
+            if(viewType == TYPE_NORMAL){
+                return new HomeworkViewHolder(inflater.inflate(R.layout.homework_item,parent,false));
+            }else if(viewType == TYPE_FOOTER){
+                return new FooterViewHolder(inflater.inflate(R.layout.footer_loadmore,parent,false));
+            }else {
+                return new HomeworkViewHolder(inflater.inflate(R.layout.homework_item,parent,false));
+            }
         }
 
         @Override
-        public void onBindViewHolder(HomeworkViewHolder holder, int position) {
-            holder.mName.setText(getItem(position).getName());
-            if(position % 2 ==0){
-                holder.mName.setBackgroundColor(holder.mName.getContext().getResources().getColor(android.R.color.holo_green_light));
-            }else {
-                holder.mName.setBackgroundColor(holder.mName.getContext().getResources().getColor(android.R.color.holo_orange_light));
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            if(holder instanceof HomeworkViewHolder){
+                ((HomeworkViewHolder)holder).mName.setText(getItem(position).getName());
+                if(position % 2 ==0){
+                    ((HomeworkViewHolder)holder).mName.setBackgroundColor(((HomeworkViewHolder)holder).mName.getContext().getResources().getColor(android.R.color.holo_green_light));
+                }else {
+                    ((HomeworkViewHolder)holder).mName.setBackgroundColor(((HomeworkViewHolder)holder).mName.getContext().getResources().getColor(android.R.color.holo_orange_light));
+                }
             }
         }
 
         @Override
         public int getItemCount() {
             return mHomeworks.size();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            if(getItem(position) != null){
+                return TYPE_NORMAL;
+            }else {
+                return TYPE_FOOTER;
+            }
         }
 
         public Homework getItem(int position){
@@ -181,6 +227,19 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
         public void replaceData(List<Homework> homeworks){
             mHomeworks = homeworks;
             notifyDataSetChanged();
+        }
+
+        public void addFooterView(){
+            mHomeworks.add(null);
+            notifyItemInserted(getItemCount() -1);
+            insertPos  = mHomeworks.size() - 1;
+        }
+
+        public void removeFooterView(){
+            if(insertPos < mHomeworks.size()){
+                mHomeworks.remove(insertPos);
+                notifyItemRemoved(insertPos);
+            }
         }
 
         class HomeworkViewHolder extends RecyclerView.ViewHolder{
@@ -197,6 +256,15 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
                         }
                     }
                 });
+            }
+        }
+
+        class FooterViewHolder extends RecyclerView.ViewHolder{
+
+            ProgressBar mProgressBar;
+            public FooterViewHolder(View itemView) {
+                super(itemView);
+                mProgressBar = (ProgressBar) itemView.findViewById(R.id.progressBar);
             }
         }
     }

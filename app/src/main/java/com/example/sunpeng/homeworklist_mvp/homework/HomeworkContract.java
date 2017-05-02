@@ -14,6 +14,7 @@ public interface HomeworkContract {
     interface View extends BaseView<Presenter>{
         void setLoadingIndicator(boolean active);
         void showHomeworks(List<Homework> homeworks);
+        void setLoadingMoreIndicator(boolean active);
         void showNoHomeworks();
         void showLoadingHomeworksError(String message);
         void showLoadingMoreHomeworksError(String message);
