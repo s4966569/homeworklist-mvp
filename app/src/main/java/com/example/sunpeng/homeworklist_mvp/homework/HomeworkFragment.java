@@ -177,6 +177,8 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
 
         private int insertPos;
 
+        private boolean mIsLoadingMore;
+
         public HomeworksAdapter(List<Homework> homeworks, HomeworkItemClickListener homeworkItemClickListener) {
             mHomeworks = homeworks;
             mItemListener = homeworkItemClickListener;
@@ -203,17 +205,23 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
                 }else {
                     ((HomeworkViewHolder)holder).mName.setBackgroundColor(((HomeworkViewHolder)holder).mName.getContext().getResources().getColor(android.R.color.holo_orange_light));
                 }
+            }else if(holder instanceof FooterViewHolder){
+                if(mIsLoadingMore){
+                    ((FooterViewHolder)holder).itemView.setVisibility(View.GONE);
+                }else {
+                    ((FooterViewHolder)holder).itemView.setVisibility(View.VISIBLE);
+                }
             }
         }
 
         @Override
         public int getItemCount() {
-            return mHomeworks.size();
+            return mHomeworks.size() + 1;
         }
 
         @Override
         public int getItemViewType(int position) {
-            if(getItem(position) != null){
+            if( position < getItemCount() -1){
                 return TYPE_NORMAL;
             }else {
                 return TYPE_FOOTER;
@@ -221,7 +229,11 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
         }
 
         public Homework getItem(int position){
-           return mHomeworks.get(position);
+            if(position < getItemCount() -1){
+                return mHomeworks.get(position);
+            }else {
+                return null;
+            }
         }
 
         public void replaceData(List<Homework> homeworks){
@@ -230,16 +242,13 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
         }
 
         public void addFooterView(){
-            mHomeworks.add(null);
+            mIsLoadingMore = true;
             notifyItemInserted(getItemCount() -1);
-            insertPos  = mHomeworks.size() - 1;
         }
 
         public void removeFooterView(){
-            if(insertPos < mHomeworks.size()){
-                mHomeworks.remove(insertPos);
-                notifyItemRemoved(insertPos);
-            }
+            mIsLoadingMore = false;
+            notifyItemRemoved(getItemCount() -1);
         }
 
         class HomeworkViewHolder extends RecyclerView.ViewHolder{
