@@ -43,7 +43,7 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mHomeworksAdapter = new HomeworksAdapter(new ArrayList<Homework>(),mItemClickListener);
+        mHomeworksAdapter = new HomeworksAdapter(new ArrayList<Homework>(),mItemClickListener,mLoadMoreItemClickListener);
     }
 
     @Nullable
@@ -57,7 +57,6 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mRecyclerView.setAdapter(mHomeworksAdapter);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
@@ -165,6 +164,16 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
         }
     };
 
+    HomeworkLoadMoreItemClickListener mLoadMoreItemClickListener = new HomeworkLoadMoreItemClickListener() {
+        @Override
+        public void onLoadMoreClick() {
+            if(!mIsLoadingMore){
+                mIsLoadingMore = true;
+                mPresenter.loadMoreHomeworks();
+            }
+        }
+    };
+
     private static class HomeworksAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
         private static int TYPE_NORMAL = 0;
@@ -175,13 +184,16 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
 
         private HomeworkItemClickListener mItemListener;
 
+        private HomeworkLoadMoreItemClickListener mLoadMoreItemClickListener;
+
         private int insertPos;
 
         private boolean mIsLoadingMore;
 
-        public HomeworksAdapter(List<Homework> homeworks, HomeworkItemClickListener homeworkItemClickListener) {
+        public HomeworksAdapter(List<Homework> homeworks, HomeworkItemClickListener homeworkItemClickListener,HomeworkLoadMoreItemClickListener homeworkLoadMoreItemClickListener) {
             mHomeworks = homeworks;
             mItemListener = homeworkItemClickListener;
+            mLoadMoreItemClickListener = homeworkLoadMoreItemClickListener;
         }
 
         @Override
@@ -205,21 +217,25 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
                 }else {
                     ((HomeworkViewHolder)holder).mName.setBackgroundColor(((HomeworkViewHolder)holder).mName.getContext().getResources().getColor(android.R.color.holo_orange_light));
                 }
+            }else if(holder instanceof FooterViewHolder){
+                if(mIsLoadingMore){
+                    ((FooterViewHolder)holder).mProgressBar.setVisibility(View.VISIBLE);
+                    ((FooterViewHolder)holder).mLoadingText.setText(((FooterViewHolder) holder).mLoadingText.getContext().getResources().getString(R.string.text_loading));
+                }else {
+                    ((FooterViewHolder)holder).mProgressBar.setVisibility(View.GONE);
+                    ((FooterViewHolder)holder).mLoadingText.setText(((FooterViewHolder) holder).mLoadingText.getContext().getResources().getString(R.string.text_click_to_load_more));
+                }
             }
         }
 
         @Override
         public int getItemCount() {
-            if(mIsLoadingMore){
-                return mHomeworks.size() + 1;
-            }else {
-                return mHomeworks.size();
-            }
+            return mHomeworks.size() > 0 ? mHomeworks.size() + 1 : mHomeworks.size();
         }
 
         @Override
         public int getItemViewType(int position) {
-            if(mIsLoadingMore && position == getItemCount() -1){
+            if(position == getItemCount() -1){
                 return TYPE_FOOTER;
             }else {
                 return TYPE_NORMAL;
@@ -269,14 +285,27 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
         class FooterViewHolder extends RecyclerView.ViewHolder{
 
             ProgressBar mProgressBar;
+            TextView mLoadingText;
             public FooterViewHolder(View itemView) {
                 super(itemView);
                 mProgressBar = (ProgressBar) itemView.findViewById(R.id.progressBar);
+                mLoadingText = (TextView) itemView.findViewById(R.id.loadingText);
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(mLoadMoreItemClickListener != null){
+                            mLoadMoreItemClickListener.onLoadMoreClick();
+                        }
+                    }
+                });
             }
         }
     }
 
     public interface HomeworkItemClickListener{
         void onHomeworkClick(Homework homeworks);
+    }
+    public interface HomeworkLoadMoreItemClickListener{
+        void onLoadMoreClick();
     }
 }

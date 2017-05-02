@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">homeworklist-mvp</string>
+    <string name="text_loading">正在加载数据...</string>
+    <string name="text_click_to_load_more">点击加载更多</string>
 </resources>
