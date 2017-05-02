@@ -91,9 +91,9 @@ public class HomeworkLocalDataSource implements HomeworkDataSource {
         double randomNum = Math.random();
         Message msg = new Message();
         msg.obj = callback;
-        if(randomNum > 0 && randomNum <0.6){
+        if(randomNum > 0 && randomNum <0.4){
             msg.what = LOAD_MORE_DATA_FINISHED;
-        }else if(randomNum > 0.6 && randomNum < 0.8) {
+        }else if(randomNum > 0.4 && randomNum < 0.8) {
             msg.what = LOAD_MORE_DATA_ERROR;
         }else {
             msg.what = NO_MORE_DATA;

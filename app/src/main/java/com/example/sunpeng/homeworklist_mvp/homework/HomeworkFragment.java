@@ -205,31 +205,29 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
                 }else {
                     ((HomeworkViewHolder)holder).mName.setBackgroundColor(((HomeworkViewHolder)holder).mName.getContext().getResources().getColor(android.R.color.holo_orange_light));
                 }
-            }else if(holder instanceof FooterViewHolder){
-                if(mIsLoadingMore){
-                    ((FooterViewHolder)holder).itemView.setVisibility(View.GONE);
-                }else {
-                    ((FooterViewHolder)holder).itemView.setVisibility(View.VISIBLE);
-                }
             }
         }
 
         @Override
         public int getItemCount() {
-            return mHomeworks.size() + 1;
+            if(mIsLoadingMore){
+                return mHomeworks.size() + 1;
+            }else {
+                return mHomeworks.size();
+            }
         }
 
         @Override
         public int getItemViewType(int position) {
-            if( position < getItemCount() -1){
-                return TYPE_NORMAL;
-            }else {
+            if(mIsLoadingMore && position == getItemCount() -1){
                 return TYPE_FOOTER;
+            }else {
+                return TYPE_NORMAL;
             }
         }
 
         public Homework getItem(int position){
-            if(position < getItemCount() -1){
+            if(position < mHomeworks.size()){
                 return mHomeworks.get(position);
             }else {
                 return null;
@@ -243,12 +241,12 @@ public class HomeworkFragment extends Fragment implements HomeworkContract.View 
 
         public void addFooterView(){
             mIsLoadingMore = true;
-            notifyItemInserted(getItemCount() -1);
+            notifyDataSetChanged();
         }
 
         public void removeFooterView(){
             mIsLoadingMore = false;
-            notifyItemRemoved(getItemCount() -1);
+            notifyDataSetChanged();
         }
 
         class HomeworkViewHolder extends RecyclerView.ViewHolder{
